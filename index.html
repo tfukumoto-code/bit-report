@@ -217,8 +217,8 @@ const JIMU_CONV_API   = [552,577,572,525,634,564,569,526,464,580,546,456,644,512
     <div class="chart-main"><canvas id="c0-android"></canvas></div>
   </div>
   <div class="section">
-    <h2>月次コンビニ印刷収益（名刺: BIT実績 / 事務: 実績 / マイソク: 実績）</h2>
-    <p style="font-size:11px;color:#bbb;margin-bottom:10px">名刺: BIT印刷枚数実績×¥80　事務: 月別実績×¥20　マイソク: 実績×¥20</p>
+    <h2>月次コンビニ印刷収益</h2>
+    <p style="font-size:11px;color:#bbb;margin-bottom:10px">名刺: BIT印刷枚数×¥80　事務: 月別印刷件数×¥20　マイソク: 月別印刷件数×¥20</p>
     <div class="chart-main"><canvas id="c0-rev"></canvas></div>
   </div>
 </div>
@@ -441,9 +441,9 @@ new Chart(document.getElementById('c0-android'), {
   new Chart(document.getElementById('c0-rev'), {
     type:'bar',
     data:{ labels:MONTHS, datasets:[
-      barDs('名刺 月次収益(実績)', meishiRevMonthly, C.meishi),
-      barDs('事務 月次収益(実績)', jimuRevMonthly, C.jimu),
-      barDs('マイソク 月次収益(実績)', maisokuRevMonthly, C.maisoku),
+      barDs('名刺 月次収益', meishiRevMonthly, C.meishi),
+      barDs('事務 月次収益', jimuRevMonthly, C.jimu),
+      barDs('マイソク 月次収益', maisokuRevMonthly, C.maisoku),
     ]},
     options:{
       ...baseOpt('円'),
