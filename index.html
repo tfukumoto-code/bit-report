@@ -17,7 +17,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif; background: #f4f6fb; color: #1a1a2e; }
 
-    .topbar { background: #fff; border-bottom: 1px solid #e8eaf0; padding: 0 32px; }
+    .topbar { background: #fff; border-bottom: 1px solid #e8eaf0; padding: 0 32px; position: sticky; top: 0; z-index: 100; }
     .topbar-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 56px; }
     .topbar h1 { font-size: 16px; font-weight: 700; }
     .topbar .meta { font-size: 12px; color: #aaa; }
@@ -217,17 +217,6 @@ const JIMU_CONV_API   = [552,577,572,525,634,564,569,526,464,580,546,456,644,512
     <h2>月次コンビニ印刷収益（名刺: BIT実績 / 事務: 推計 / マイソク: 実績）</h2>
     <p style="font-size:11px;color:#bbb;margin-bottom:10px">名刺: BIT印刷枚数実績×¥80　事務: 月次平均641件×¥20（推計）　マイソク: 実績×¥20</p>
     <div class="chart-main"><canvas id="c0-rev"></canvas></div>
-  </div>
-  <div class="section">
-    <h2>未収集データ（要確認）</h2>
-    <table>
-      <thead><tr><th>項目</th><th>理由</th><th>確認方法</th></tr></thead>
-      <tbody>
-        <tr><td>コンビニ名刺印刷 API 実行回数</td><td>convenient-printing IAM 権限なし</td><td>プロジェクトオーナーが確認</td></tr>
-        <tr><td>名刺API 手書き/写真別内訳</td><td>同上</td><td>プロジェクトオーナーが確認</td></tr>
-        <tr><td>BIT 印刷枚数（累計）</td><td>ekanri.e-shinbun.net にアクセス不可</td><td>手動ログイン（ID: remodela）</td></tr>
-      </tbody>
-    </table>
   </div>
 </div>
 </div>
