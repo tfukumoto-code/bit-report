@@ -217,8 +217,8 @@ const JIMU_CONV_API   = [552,577,572,525,634,564,569,526,464,580,546,456,644,512
     <div class="chart-main"><canvas id="c0-android"></canvas></div>
   </div>
   <div class="section">
-    <h2>月次コンビニ印刷収益（名刺: BIT実績 / 事務: 推計 / マイソク: 実績）</h2>
-    <p style="font-size:11px;color:#bbb;margin-bottom:10px">名刺: BIT印刷枚数実績×¥80　事務: 月次平均641件×¥20（推計）　マイソク: 実績×¥20</p>
+    <h2>月次コンビニ印刷収益（名刺: BIT実績 / 事務: 実績 / マイソク: 実績）</h2>
+    <p style="font-size:11px;color:#bbb;margin-bottom:10px">名刺: BIT印刷枚数実績×¥80　事務: 月別実績×¥20　マイソク: 実績×¥20</p>
     <div class="chart-main"><canvas id="c0-rev"></canvas></div>
   </div>
 </div>
@@ -432,18 +432,17 @@ new Chart(document.getElementById('c0-android'), {
   options: baseOpt('ダウンロード数')
 });
 
-// 月次収益チャート（名刺実績 + 事務推計 + マイソク実績）
+// 月次収益チャート（名刺実績 + 事務実績 + マイソク実績）
 {
   const meishiRevMonthly  = MEISHI_BIT_PRINTS.map(v => v * MEISHI_PRINT_PRICE);
-  const jimuMonthlyPrints = Math.round(15387/24); // ≈641
-  const jimuRevMonthly    = MONTHS.map(() => jimuMonthlyPrints * JIMU_PRINT_PRICE);
+  const jimuRevMonthly    = [0, 0, ...JIMU_CONV_PRINT].map(v => v * JIMU_PRINT_PRICE); // Apr/May 2024はデータなし→0
   const maisokuPad        = [0,0,0,0,0,0,0,...MAISOKU_PRINT]; // 7ヶ月(Apr-Oct2024)を0でパディング
   const maisokuRevMonthly = maisokuPad.map(v => v * MAISOKU_PRINT_PRICE);
   new Chart(document.getElementById('c0-rev'), {
     type:'bar',
     data:{ labels:MONTHS, datasets:[
       barDs('名刺 月次収益(実績)', meishiRevMonthly, C.meishi),
-      barDs('事務 月次収益(推計)', jimuRevMonthly, C.jimu),
+      barDs('事務 月次収益(実績)', jimuRevMonthly, C.jimu),
       barDs('マイソク 月次収益(実績)', maisokuRevMonthly, C.maisoku),
     ]},
     options:{
