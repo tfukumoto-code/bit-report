@@ -196,6 +196,14 @@ const MAISOKU_PRINT = [8,0,0,8,1,1,0,5,5,3,9,8,3,2,11,3,3];
     <h2>月別データ</h2>
     <table><thead><tr><th>月</th><th>DL数</th></tr></thead><tbody id="t1"></tbody></table>
   </div>
+  <div class="section">
+    <h2>収益・損益</h2>
+    <div class="kpi-row col3">
+      <div class="kcard"><div class="label">開発投資</div><div class="value">¥4,640,000</div></div>
+      <div class="kcard"><div class="label">累計印刷収益</div><div class="value">未取得</div><div class="sub">convenient-printing 件数要確認</div></div>
+      <div class="kcard"><div class="label">損益分岐（必要印刷件数 @¥50）</div><div class="value" id="k1-bep"></div></div>
+    </div>
+  </div>
 </div>
 </div>
 
@@ -240,6 +248,16 @@ const MAISOKU_PRINT = [8,0,0,8,1,1,0,5,5,3,9,8,3,2,11,3,3];
     <h2>月別データ</h2>
     <table><thead><tr><th>月</th><th>送信件数</th><th>ユーザー数</th></tr></thead><tbody id="t2"></tbody></table>
   </div>
+  <div class="section">
+    <h2>収益・損益</h2>
+    <div class="kpi-row col4">
+      <div class="kcard"><div class="label">開発投資</div><div class="value">¥3,624,000</div></div>
+      <div class="kcard"><div class="label">累計印刷収益（@¥50）</div><div class="value" id="k2-rev"></div></div>
+      <div class="kcard"><div class="label">回収率</div><div class="value" id="k2-pct"></div></div>
+      <div class="kcard"><div class="label">損益分岐まで残り</div><div class="value" id="k2-rem"></div></div>
+    </div>
+    <div class="chart-main"><canvas id="c2-rev"></canvas></div>
+  </div>
 </div>
 </div>
 
@@ -272,6 +290,16 @@ const MAISOKU_PRINT = [8,0,0,8,1,1,0,5,5,3,9,8,3,2,11,3,3];
   <div class="section">
     <h2>月別データ</h2>
     <table><thead><tr><th>月</th><th>新規ユーザー</th><th>新規案件</th><th>URL共有</th><th>メール</th><th>コンビニ印刷</th></tr></thead><tbody id="t3"></tbody></table>
+  </div>
+  <div class="section">
+    <h2>収益・損益</h2>
+    <div class="kpi-row col4">
+      <div class="kcard"><div class="label">開発投資</div><div class="value">¥6,526,000</div></div>
+      <div class="kcard"><div class="label">累計印刷収益（@¥50）</div><div class="value" id="k3-rev"></div></div>
+      <div class="kcard"><div class="label">回収率</div><div class="value" id="k3-pct"></div></div>
+      <div class="kcard"><div class="label">損益分岐まで残り</div><div class="value" id="k3-rem"></div></div>
+    </div>
+    <div class="chart-main"><canvas id="c3-rev"></canvas></div>
   </div>
 </div>
 </div>
@@ -436,6 +464,8 @@ const totRow1 = document.createElement('tr'); totRow1.className='hl';
 totRow1.innerHTML = `<td>合計</td><td>${fmt(sum(DL.meishi))}</td>`;
 tb1.appendChild(totRow1);
 
+document.getElementById('k1-bep').textContent = fmt(Math.ceil(4640000/PRINT_PRICE)) + '件';
+
 // ─── PAGE 2 リモデラ事務 ───
 document.getElementById('k2-dl').textContent        = fmt(sum(DL.jimu));
 document.getElementById('k2-dl-latest').textContent = fmt(DL.jimu.at(-1));
@@ -485,6 +515,29 @@ JIMU_MONTHS.forEach((m,i) => {
   tb2.appendChild(tr);
 });
 
+// p2 収益損益
+{
+  const inv = 3624000, cnt = 15387;
+  const rev = cnt * PRINT_PRICE;
+  const bep = Math.ceil(inv / PRINT_PRICE);
+  document.getElementById('k2-rev').textContent = '¥' + fmt(rev);
+  document.getElementById('k2-pct').textContent = (rev/inv*100).toFixed(1) + '%';
+  document.getElementById('k2-rem').textContent = fmt(bep - cnt) + '件';
+  new Chart(document.getElementById('c2-rev'), {
+    type:'bar',
+    data:{ labels:['開発投資','累計収益'], datasets:[{
+      label:'金額', data:[inv, rev],
+      backgroundColor:[alpha(C.invest,.2), alpha(C.rev,.3)],
+      borderColor:[C.invest, C.rev], borderWidth:1.5, borderRadius:4
+    }]},
+    options:{
+      ...baseOpt('円'),
+      scales:{ x:xOpt, y:{ ...yOpt(), ticks:{callback:v=>'¥'+fmt(v),font:{size:10}}, grid:{color:'#f3f4f6'} } },
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>'¥'+fmt(ctx.raw)}} }
+    }
+  });
+}
+
 // ─── PAGE 3 マイソク ───
 document.getElementById('k3-dl').textContent = fmt(sum(DL.maisoku));
 
@@ -520,6 +573,29 @@ MAISOKU_MONTHS.forEach((m,i) => {
 const totRow3 = document.createElement('tr'); totRow3.className='hl';
 totRow3.innerHTML = `<td>累計</td><td>${sum(MAISOKU_USERS)}</td><td>${sum(MAISOKU_CASES)}</td><td>${sum(MAISOKU_URL)}</td><td>${sum(MAISOKU_MAIL)}</td><td>${sum(MAISOKU_PRINT)}</td>`;
 tb3.appendChild(totRow3);
+
+// p3 収益損益
+{
+  const inv = 6526000, cnt = 70;
+  const rev = cnt * PRINT_PRICE;
+  const bep = Math.ceil(inv / PRINT_PRICE);
+  document.getElementById('k3-rev').textContent = '¥' + fmt(rev);
+  document.getElementById('k3-pct').textContent = (rev/inv*100).toFixed(2) + '%';
+  document.getElementById('k3-rem').textContent = fmt(bep - cnt) + '件';
+  new Chart(document.getElementById('c3-rev'), {
+    type:'bar',
+    data:{ labels:['開発投資','累計収益'], datasets:[{
+      label:'金額', data:[inv, rev],
+      backgroundColor:[alpha(C.invest,.2), alpha(C.rev,.3)],
+      borderColor:[C.invest, C.rev], borderWidth:1.5, borderRadius:4
+    }]},
+    options:{
+      ...baseOpt('円'),
+      scales:{ x:xOpt, y:{ ...yOpt(), ticks:{callback:v=>'¥'+fmt(v),font:{size:10}}, grid:{color:'#f3f4f6'} } },
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>'¥'+fmt(ctx.raw)}} }
+    }
+  });
+}
 
 // ─── PAGE 4 収益・損益 ───
 (() => {
@@ -615,12 +691,15 @@ tb3.appendChild(totRow3);
   // サマリーテーブル
   const tb4 = document.getElementById('t4');
   [
-    { name:'リモデラ事務',    inv:JIMU_INV,    rev:jimuRev,    cnt:JIMU_PRINT,     bep:Math.ceil(JIMU_INV/PRINT_PRICE) },
+    { name:'コンビニ名刺印刷', inv:4640000,    rev:null,       cnt:null,           bep:Math.ceil(4640000/PRINT_PRICE) },
+    { name:'リモデラ事務',     inv:JIMU_INV,   rev:jimuRev,    cnt:JIMU_PRINT,     bep:Math.ceil(JIMU_INV/PRINT_PRICE) },
     { name:'リモデラマイソク', inv:MAISOKU_INV, rev:maisokuRev, cnt:MAISOKU_PRINT_T, bep:Math.ceil(MAISOKU_INV/PRINT_PRICE) },
   ].forEach(r => {
     const tr = document.createElement('tr');
-    const pct = (r.rev/r.inv*100).toFixed(2);
-    tr.innerHTML = `<td>${r.name}</td><td>¥${fmt(r.inv)}</td><td>${fmt(r.cnt)}件</td><td>¥${fmt(r.rev)}</td><td>${pct}%</td><td>${fmt(r.bep)}件</td>`;
+    const cntStr = r.cnt != null ? fmt(r.cnt)+'件' : '未取得';
+    const revStr = r.rev != null ? '¥'+fmt(r.rev) : '未取得';
+    const pctStr = r.rev != null ? (r.rev/r.inv*100).toFixed(2)+'%' : '—';
+    tr.innerHTML = `<td>${r.name}</td><td>¥${fmt(r.inv)}</td><td>${cntStr}</td><td>${revStr}</td><td>${pctStr}</td><td>${fmt(r.bep)}件</td>`;
     tb4.appendChild(tr);
   });
 })();
