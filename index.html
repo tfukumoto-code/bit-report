@@ -57,6 +57,10 @@
     .by { background: #fef9c3; color: #a16207; }
     .br { background: #fee2e2; color: #b91c1c; }
 
+    .conditions { background: #f0f4ff; border-bottom: 1px solid #dde3f8; padding: 8px 32px; font-size: 12px; color: #555; }
+    .conditions-inner { max-width: 1100px; margin: 0 auto; }
+    .conditions strong { color: #6366f1; }
+
     footer { text-align: center; font-size: 11px; color: #ccc; margin-top: 28px; }
   </style>
 </head>
@@ -69,8 +73,11 @@
 const REPORT_DATE = '2026-04-20';
 const DATA_RANGE  = '2024/04 〜 2026/03（24ヶ月）';
 
-// ★ コンビニ印刷単価（円）
-const PRINT_PRICE = 50;
+// ★ コンビニ印刷 平均収益単価（円）
+const MEISHI_PRINT_PRICE  = 35; // コンビニ名刺印刷
+const JIMU_PRINT_PRICE    = 50; // リモデラ事務
+const MAISOKU_PRINT_PRICE = 50; // リモデラマイソク
+const PRINT_PRICE = 50; // 事務・マイソク共通（後方互換）
 
 const MONTHS = [
   '2024/04','2024/05','2024/06','2024/07','2024/08','2024/09',
@@ -132,6 +139,17 @@ const MAISOKU_PRINT = [8,0,0,8,1,1,0,5,5,3,9,8,3,2,11,3,3];
     <div class="tab"         onclick="switchTab(2)">📄 リモデラ事務</div>
     <div class="tab"         onclick="switchTab(3)">🏠 リモデラマイソク</div>
     <div class="tab"         onclick="switchTab(4)">💴 収益・損益</div>
+  </div>
+</div>
+
+<!-- 収益計算の前提条件 -->
+<div class="conditions">
+  <div class="conditions-inner">
+    収益単価前提（コンビニ印刷）:
+    <strong>コンビニ名刺印刷 ¥35/件</strong>　／
+    <strong>リモデラ事務 ¥50/件</strong>　／
+    <strong>リモデラマイソク ¥50/件</strong>
+    　※ Android DL 数は未取得（Google Play Console 別アカウント）
   </div>
 </div>
 
@@ -478,7 +496,7 @@ const totRow1 = document.createElement('tr'); totRow1.className='hl';
 totRow1.innerHTML = `<td>合計</td><td>${fmt(sum(DL.meishi))}</td>`;
 tb1.appendChild(totRow1);
 
-document.getElementById('k1-bep').textContent = fmt(Math.ceil(4640000/PRINT_PRICE)) + '件';
+document.getElementById('k1-bep').textContent = fmt(Math.ceil(4640000/MEISHI_PRINT_PRICE)) + '件';
 
 new Chart(document.getElementById('c1-rev'), {
   type:'bar',
@@ -719,7 +737,7 @@ tb3.appendChild(totRow3);
   // サマリーテーブル
   const tb4 = document.getElementById('t4');
   [
-    { name:'コンビニ名刺印刷', inv:4640000,    rev:null,       cnt:null,           bep:Math.ceil(4640000/PRINT_PRICE) },
+    { name:'コンビニ名刺印刷', inv:4640000,    rev:null,       cnt:null,           bep:Math.ceil(4640000/MEISHI_PRINT_PRICE) },
     { name:'リモデラ事務',     inv:JIMU_INV,   rev:jimuRev,    cnt:JIMU_PRINT,     bep:Math.ceil(JIMU_INV/PRINT_PRICE) },
     { name:'リモデラマイソク', inv:MAISOKU_INV, rev:maisokuRev, cnt:MAISOKU_PRINT_T, bep:Math.ceil(MAISOKU_INV/PRINT_PRICE) },
   ].forEach(r => {
