@@ -74,10 +74,10 @@ const REPORT_DATE = '2026-04-20';
 const DATA_RANGE  = '2024/04 〜 2026/03（24ヶ月）';
 
 // ★ コンビニ印刷 平均収益単価（円）
-const MEISHI_PRINT_PRICE  = 35; // コンビニ名刺印刷
-const JIMU_PRINT_PRICE    = 50; // リモデラ事務
-const MAISOKU_PRINT_PRICE = 50; // リモデラマイソク
-const PRINT_PRICE = 50; // 事務・マイソク共通（後方互換）
+const MEISHI_PRINT_PRICE  = 150; // コンビニ名刺印刷
+const JIMU_PRINT_PRICE    = 35;  // リモデラ事務
+const MAISOKU_PRINT_PRICE = 35;  // リモデラマイソク
+const PRINT_PRICE = 35; // 事務・マイソク共通（後方互換）
 
 const MONTHS = [
   '2024/04','2024/05','2024/06','2024/07','2024/08','2024/09',
@@ -146,9 +146,9 @@ const MAISOKU_PRINT = [8,0,0,8,1,1,0,5,5,3,9,8,3,2,11,3,3];
 <div class="conditions">
   <div class="conditions-inner">
     収益単価前提（コンビニ印刷）:
-    <strong>コンビニ名刺印刷 ¥35/件</strong>　／
-    <strong>リモデラ事務 ¥50/件</strong>　／
-    <strong>リモデラマイソク ¥50/件</strong>
+    <strong>コンビニ名刺印刷 ¥150/件</strong>　／
+    <strong>リモデラ事務 ¥35/件</strong>　／
+    <strong>リモデラマイソク ¥35/件</strong>
     　※ Android DL 数は未取得（Google Play Console 別アカウント）
   </div>
 </div>
@@ -274,7 +274,7 @@ const MAISOKU_PRINT = [8,0,0,8,1,1,0,5,5,3,9,8,3,2,11,3,3];
     <h2>収益・損益</h2>
     <div class="kpi-row col4" style="margin-bottom:14px">
       <div class="kcard"><div class="label">開発投資</div><div class="value">¥3,624,000</div></div>
-      <div class="kcard"><div class="label">累計印刷収益（@¥50）</div><div class="value" id="k2-rev"></div></div>
+      <div class="kcard"><div class="label">累計印刷収益（@¥35）</div><div class="value" id="k2-rev"></div></div>
       <div class="kcard"><div class="label">回収率</div><div class="value" id="k2-pct"></div></div>
       <div class="kcard"><div class="label">損益分岐まで残り</div><div class="value" id="k2-rem"></div></div>
     </div>
@@ -327,7 +327,7 @@ const MAISOKU_PRINT = [8,0,0,8,1,1,0,5,5,3,9,8,3,2,11,3,3];
     <h2>収益・損益</h2>
     <div class="kpi-row col4">
       <div class="kcard"><div class="label">開発投資</div><div class="value">¥6,526,000</div></div>
-      <div class="kcard"><div class="label">累計印刷収益（@¥50）</div><div class="value" id="k3-rev"></div></div>
+      <div class="kcard"><div class="label">累計印刷収益（@¥35）</div><div class="value" id="k3-rev"></div></div>
       <div class="kcard"><div class="label">回収率</div><div class="value" id="k3-pct"></div></div>
       <div class="kcard"><div class="label">損益分岐まで残り</div><div class="value" id="k3-rem"></div></div>
     </div>
