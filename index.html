@@ -17,7 +17,8 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif; background: #f4f6fb; color: #1a1a2e; }
 
-    .topbar { background: #fff; border-bottom: 1px solid #e8eaf0; padding: 0 32px; position: sticky; top: 0; z-index: 100; }
+    .sticky-header { position: sticky; top: 0; z-index: 100; }
+    .topbar { background: #fff; border-bottom: 1px solid #e8eaf0; padding: 0 32px; }
     .topbar-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 56px; }
     .topbar h1 { font-size: 16px; font-weight: 700; }
     .topbar .meta { font-size: 12px; color: #aaa; }
@@ -147,7 +148,8 @@ const JIMU_CONV_PRINT = [416,472,456,424,453,431,399,373,329,408,408,346,459,383
 const JIMU_CONV_API   = [552,577,572,525,634,564,569,526,464,580,546,456,644,512,467,477,502,450,461,507,456,334];
 </script>
 
-<!-- ヘッダー -->
+<!-- ヘッダー + タブ + 前提条件（固定） -->
+<div class="sticky-header">
 <div class="topbar">
   <div class="topbar-inner">
     <h1>BIT アプリ利用実績レポート</h1>
@@ -171,6 +173,7 @@ const JIMU_CONV_API   = [552,577,572,525,634,564,569,526,464,580,546,456,644,512
     収益単価前提（コンビニ印刷）:
     <strong>売上200円の場合に収益80円、売上50円の場合に収益20円を想定</strong>
   </div>
+</div>
 </div>
 
 <!-- ================================================================
