@@ -198,11 +198,13 @@ const MAISOKU_PRINT = [8,0,0,8,1,1,0,5,5,3,9,8,3,2,11,3,3];
   </div>
   <div class="section">
     <h2>収益・損益</h2>
-    <div class="kpi-row col3">
+    <div class="kpi-row col4" style="margin-bottom:14px">
       <div class="kcard"><div class="label">開発投資</div><div class="value">¥4,640,000</div></div>
       <div class="kcard"><div class="label">累計印刷収益</div><div class="value">未取得</div><div class="sub">convenient-printing 件数要確認</div></div>
-      <div class="kcard"><div class="label">損益分岐（必要印刷件数 @¥50）</div><div class="value" id="k1-bep"></div></div>
+      <div class="kcard"><div class="label">回収率</div><div class="value">—</div></div>
+      <div class="kcard"><div class="label">損益分岐（@¥50）</div><div class="value" id="k1-bep"></div></div>
     </div>
+    <div class="chart-main"><canvas id="c1-rev"></canvas></div>
   </div>
 </div>
 </div>
@@ -213,11 +215,10 @@ const MAISOKU_PRINT = [8,0,0,8,1,1,0,5,5,3,9,8,3,2,11,3,3];
 ================================================================ -->
 <div class="page" id="p2">
 <div class="container">
-  <div class="kpi-row col5">
+  <div class="kpi-row col4">
     <div class="kcard"><div class="label">iOS DL 合計（24ヶ月）</div><div class="value" id="k2-dl"></div></div>
     <div class="kcard"><div class="label">最新月 DL（2026/03）</div><div class="value" id="k2-dl-latest"></div></div>
     <div class="kcard"><div class="label">月次送信（2026/03）</div><div class="value">9,858</div></div>
-    <div class="kcard"><div class="label">アクティブユーザー（2026/03）</div><div class="value">1,513</div></div>
     <div class="kcard"><div class="label">累計コンビニ印刷</div><div class="value">15,387</div><div class="sub">API 595件/月</div></div>
   </div>
   <div class="section">
@@ -234,6 +235,20 @@ const MAISOKU_PRINT = [8,0,0,8,1,1,0,5,5,3,9,8,3,2,11,3,3];
       <div class="chart-sub"><canvas id="c2-user"></canvas></div>
     </div>
   </div>
+  <div class="section">
+    <h2>月別データ</h2>
+    <table><thead><tr><th>月</th><th>送信件数</th><th>ユーザー数</th></tr></thead><tbody id="t2"></tbody></table>
+  </div>
+  <div class="section">
+    <h2>収益・損益</h2>
+    <div class="kpi-row col4" style="margin-bottom:14px">
+      <div class="kcard"><div class="label">開発投資</div><div class="value">¥3,624,000</div></div>
+      <div class="kcard"><div class="label">累計印刷収益（@¥50）</div><div class="value" id="k2-rev"></div></div>
+      <div class="kcard"><div class="label">回収率</div><div class="value" id="k2-pct"></div></div>
+      <div class="kcard"><div class="label">損益分岐まで残り</div><div class="value" id="k2-rem"></div></div>
+    </div>
+    <div class="chart-main"><canvas id="c2-rev"></canvas></div>
+  </div>
   <div class="two">
     <div class="section">
       <h2>累計送信内訳 — 方法別</h2>
@@ -243,20 +258,6 @@ const MAISOKU_PRINT = [8,0,0,8,1,1,0,5,5,3,9,8,3,2,11,3,3];
       <h2>累計送信内訳 — 書類種別</h2>
       <div class="chart-sub"><canvas id="c2-doc"></canvas></div>
     </div>
-  </div>
-  <div class="section">
-    <h2>月別データ</h2>
-    <table><thead><tr><th>月</th><th>送信件数</th><th>ユーザー数</th></tr></thead><tbody id="t2"></tbody></table>
-  </div>
-  <div class="section">
-    <h2>収益・損益</h2>
-    <div class="kpi-row col4">
-      <div class="kcard"><div class="label">開発投資</div><div class="value">¥3,624,000</div></div>
-      <div class="kcard"><div class="label">累計印刷収益（@¥50）</div><div class="value" id="k2-rev"></div></div>
-      <div class="kcard"><div class="label">回収率</div><div class="value" id="k2-pct"></div></div>
-      <div class="kcard"><div class="label">損益分岐まで残り</div><div class="value" id="k2-rem"></div></div>
-    </div>
-    <div class="chart-main"><canvas id="c2-rev"></canvas></div>
   </div>
 </div>
 </div>
@@ -465,6 +466,20 @@ totRow1.innerHTML = `<td>合計</td><td>${fmt(sum(DL.meishi))}</td>`;
 tb1.appendChild(totRow1);
 
 document.getElementById('k1-bep').textContent = fmt(Math.ceil(4640000/PRINT_PRICE)) + '件';
+
+new Chart(document.getElementById('c1-rev'), {
+  type:'bar',
+  data:{ labels:['開発投資','累計収益'], datasets:[{
+    label:'金額', data:[4640000, 0],
+    backgroundColor:[alpha(C.invest,.2), alpha(C.rev,.3)],
+    borderColor:[C.invest, C.rev], borderWidth:1.5, borderRadius:4
+  }]},
+  options:{
+    ...baseOpt('円'),
+    scales:{ x:xOpt, y:{ ...yOpt(), ticks:{callback:v=>'¥'+fmt(v),font:{size:10}}, grid:{color:'#f3f4f6'} } },
+    plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>ctx.dataIndex===1?'未取得':'¥'+fmt(ctx.raw)}} }
+  }
+});
 
 // ─── PAGE 2 リモデラ事務 ───
 document.getElementById('k2-dl').textContent        = fmt(sum(DL.jimu));
