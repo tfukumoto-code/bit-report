@@ -73,11 +73,11 @@
 const REPORT_DATE = '2026-04-20';
 const DATA_RANGE  = '2024/04 〜 2026/03（24ヶ月）';
 
-// ★ コンビニ印刷 平均収益単価（円）
-const MEISHI_PRINT_PRICE  = 150; // コンビニ名刺印刷
-const JIMU_PRINT_PRICE    = 35;  // リモデラ事務
-const MAISOKU_PRINT_PRICE = 35;  // リモデラマイソク
-const PRINT_PRICE = 35; // 事務・マイソク共通（後方互換）
+// ★ コンビニ印刷 利益単価（円） ※印刷売上200円→利益80円、50円→利益20円
+const MEISHI_PRINT_PRICE  = 80; // コンビニ名刺印刷（売上200円 - 原価120円）
+const JIMU_PRINT_PRICE    = 20; // リモデラ事務（売上50円 - 原価30円）
+const MAISOKU_PRINT_PRICE = 20; // リモデラマイソク（売上50円 - 原価30円）
+const PRINT_PRICE = 20; // 事務・マイソク共通（後方互換）
 
 const MONTHS = [
   '2024/04','2024/05','2024/06','2024/07','2024/08','2024/09',
@@ -121,6 +121,22 @@ const MAISOKU_CASES = [73,50,81,110,94,59,57,41,53,49,47,67,60,92,62,96,79];
 const MAISOKU_URL   = [62,35,68,95,95,51,58,36,51,43,34,44,37,36,29,17,23];
 const MAISOKU_MAIL  = [0,16,6,84,28,20,15,15,0,0,0,0,0,0,12,11,0];
 const MAISOKU_PRINT = [8,0,0,8,1,1,0,5,5,3,9,8,3,2,11,3,3];
+
+// ★ コンビニ名刺印刷 月別BIT印刷枚数（ekanri.e-shinbun.net より取得 2026-04-20）
+// 2024/04〜2026/02: Google Drive スプレッドシート（2026年3月23日報告会資料）
+// 2026/03: ekanri.e-shinbun.net 実測（シャープ3,452枚 + 富士フィルム1,367枚）
+const MEISHI_BIT_PRINTS = [741,1006,1208,1575,1891,2045,2253,2116,1652,1619,1924,2153,2251,2099,2073,1982,2002,2500,2407,2106,2136,2896,4099,4819];
+
+// ★ コンビニ名刺印刷 API実行回数・写真・手入力（月別）
+// 2024/04〜2026/02: Google Drive スプレッドシート。2024/04〜05: 写真/手入力 内訳なし。2026/03: データなし
+const MEISHI_API_CALLS = [593,812,1049,1196,1370,1444,1597,1472,1216,1220,1512,1588,1583,1748,1525,1532,1380,1737,1655,1440,1471,2140,2744,null];
+const MEISHI_PHOTO  = [null,null,629,727,855,1068,1129,904,760,804,1020,1017,1180,1015,1039,1026,967,1292,1039,1005,1021,1812,2436,null];
+const MEISHI_MANUAL = [null,null,579,848,1036,977,1124,1212,892,815,904,1136,1071,1084,1034,956,1035,1208,1368,1100,1115,1084,1663,null];
+
+// ★ リモデラ事務 月別コンビニ印刷件数・API実行回数（2024/06〜2026/02 + 2026/03 未取得）
+// Google Drive スプレッドシート「リモデラ事務 印刷枚数」より取得（2026-04-20）
+const JIMU_CONV_PRINT = [416,472,456,424,453,431,399,373,329,408,408,346,459,383,370,361,386,350,359,339,348,314];
+const JIMU_CONV_API   = [552,577,572,525,634,564,569,526,464,580,546,456,644,512,467,477,502,450,461,507,456,334];
 </script>
 
 <!-- ヘッダー -->
@@ -138,7 +154,6 @@ const MAISOKU_PRINT = [8,0,0,8,1,1,0,5,5,3,9,8,3,2,11,3,3];
     <div class="tab"         onclick="switchTab(1)">🪪 コンビニ名刺印刷</div>
     <div class="tab"         onclick="switchTab(2)">📄 リモデラ事務</div>
     <div class="tab"         onclick="switchTab(3)">🏠 リモデラマイソク</div>
-    <div class="tab"         onclick="switchTab(4)">💴 収益・損益</div>
   </div>
 </div>
 
@@ -146,10 +161,7 @@ const MAISOKU_PRINT = [8,0,0,8,1,1,0,5,5,3,9,8,3,2,11,3,3];
 <div class="conditions">
   <div class="conditions-inner">
     収益単価前提（コンビニ印刷）:
-    <strong>コンビニ名刺印刷 ¥150/件</strong>　／
-    <strong>リモデラ事務 ¥35/件</strong>　／
-    <strong>リモデラマイソク ¥35/件</strong>
-    　※ 名刺API実行回数は convenient-printing プロジェクトへのアクセス権限なし（要確認）
+    <strong>売上200円の場合に収益80円、売上50円の場合に収益20円を想定</strong>
   </div>
 </div>
 
@@ -166,9 +178,24 @@ const MAISOKU_PRINT = [8,0,0,8,1,1,0,5,5,3,9,8,3,2,11,3,3];
   </div>
   <!-- 収益 KPI -->
   <div class="kpi-row col3">
-    <div class="kcard"><div class="label">名刺 累計コンビニ印刷収益</div><div class="value">未取得</div><div class="sub">API実行回数要確認（¥150/件）</div></div>
-    <div class="kcard"><div class="label">事務 累計コンビニ印刷収益（@¥35）</div><div class="value" id="k0-jr"></div><div class="sub" id="k0-jr-sub"></div></div>
-    <div class="kcard"><div class="label">マイソク 累計コンビニ印刷収益（@¥35）</div><div class="value" id="k0-mr"></div><div class="sub" id="k0-mr-sub"></div></div>
+    <div class="kcard">
+      <div class="label">名刺 累計コンビニ印刷収益（@¥80）</div>
+      <div class="value" id="k0-meishi-r"></div>
+      <div class="sub" id="k0-meishi-r-sub"></div>
+      <div class="sub" style="margin-top:4px">投資総額 <strong>¥4,640,000</strong></div>
+    </div>
+    <div class="kcard">
+      <div class="label">事務 累計コンビニ印刷収益（@¥20）</div>
+      <div class="value" id="k0-jr"></div>
+      <div class="sub" id="k0-jr-sub"></div>
+      <div class="sub" style="margin-top:4px">投資総額 <strong>¥3,624,000</strong></div>
+    </div>
+    <div class="kcard">
+      <div class="label">マイソク 累計コンビニ印刷収益（@¥20）</div>
+      <div class="value" id="k0-mr"></div>
+      <div class="sub" id="k0-mr-sub"></div>
+      <div class="sub" style="margin-top:4px">投資総額 <strong>¥6,526,000</strong></div>
+    </div>
   </div>
   <div class="section">
     <h2>iOS ダウンロード数 月別推移（3アプリ・24ヶ月）</h2>
@@ -179,8 +206,8 @@ const MAISOKU_PRINT = [8,0,0,8,1,1,0,5,5,3,9,8,3,2,11,3,3];
     <div class="chart-main"><canvas id="c0-android"></canvas></div>
   </div>
   <div class="section">
-    <h2>月次コンビニ印刷収益（事務 推計 / マイソク 実績）</h2>
-    <p style="font-size:11px;color:#bbb;margin-bottom:10px">事務: 月次平均641件×¥35（実績15,387件÷24ヶ月）　名刺: API実行回数未取得のため除外</p>
+    <h2>月次コンビニ印刷収益（名刺: BIT実績 / 事務: 推計 / マイソク: 実績）</h2>
+    <p style="font-size:11px;color:#bbb;margin-bottom:10px">名刺: BIT印刷枚数実績×¥80　事務: 月次平均641件×¥20（推計）　マイソク: 実績×¥20</p>
     <div class="chart-main"><canvas id="c0-rev"></canvas></div>
   </div>
   <div class="section">
@@ -210,41 +237,16 @@ const MAISOKU_PRINT = [8,0,0,8,1,1,0,5,5,3,9,8,3,2,11,3,3];
     <div class="kcard"><div class="label">コンバージョン率（日次平均）</div><div class="value">17.9%</div><div class="sub">前期比 +126%</div></div>
   </div>
   <div class="section">
-    <h2>iOS ダウンロード数 月別推移（2024/04〜2026/03）</h2>
+    <h2>ダウンロード数 月別推移（iOS + Android）</h2>
     <div class="chart-main"><canvas id="c1-dl"></canvas></div>
   </div>
-  <div class="two">
-    <div class="section">
-      <h2>iOS ダウンロード数 月別推移（折れ線）</h2>
-      <div class="chart-sub"><canvas id="c1-trend"></canvas></div>
-    </div>
-    <div class="section">
-      <h2>Android ダウンロード数 月別推移（折れ線）</h2>
-      <div class="chart-sub"><canvas id="c1-android"></canvas></div>
-    </div>
-  </div>
   <div class="section">
-    <h2>API 実行回数 — 手書き / 写真 別（月別）</h2>
-    <div style="display:flex;align-items:center;justify-content:center;height:160px;flex-direction:column;gap:8px">
-      <p style="color:#bbb;font-size:13px;text-align:center">
-        convenient-printing プロジェクトへのアクセス権限なし<br>
-        手書き / 写真別データの取得にはプロジェクトオーナーの許可が必要
-      </p>
-    </div>
+    <h2>API 実行回数 / BIT 印刷枚数（月別）</h2>
+    <div class="chart-main"><canvas id="c1-api"></canvas></div>
   </div>
   <div class="section">
     <h2>月別データ</h2>
-    <table><thead><tr><th>月</th><th>iOS DL</th><th>Android DL</th><th>合計 DL</th></tr></thead><tbody id="t1"></tbody></table>
-  </div>
-  <div class="section">
-    <h2>収益・損益</h2>
-    <div class="kpi-row col4" style="margin-bottom:14px">
-      <div class="kcard"><div class="label">開発投資</div><div class="value">¥4,640,000</div></div>
-      <div class="kcard"><div class="label">累計印刷収益</div><div class="value">未取得</div><div class="sub">convenient-printing 件数要確認</div></div>
-      <div class="kcard"><div class="label">回収率</div><div class="value">—</div></div>
-      <div class="kcard"><div class="label">損益分岐（@¥150/件）</div><div class="value" id="k1-bep"></div></div>
-    </div>
-    <div class="chart-main"><canvas id="c1-rev"></canvas></div>
+    <table><thead><tr><th>月</th><th>iOS DL</th><th>Android DL</th><th>合計 DL</th><th>API実行回数</th><th>写真</th><th>手入力</th><th>印刷枚数</th></tr></thead><tbody id="t1"></tbody></table>
   </div>
 </div>
 </div>
@@ -262,12 +264,12 @@ const MAISOKU_PRINT = [8,0,0,8,1,1,0,5,5,3,9,8,3,2,11,3,3];
     <div class="kcard"><div class="label">累計コンビニ印刷</div><div class="value">15,387</div><div class="sub">API 595件/月</div></div>
   </div>
   <div class="section">
-    <h2>iOS ダウンロード数 月別推移（2024/04〜2026/03）</h2>
+    <h2>ダウンロード数 月別推移（iOS + Android）</h2>
     <div class="chart-main"><canvas id="c2-dl"></canvas></div>
   </div>
   <div class="section">
-    <h2>Android ダウンロード数 月別推移（2024/04〜2026/03）</h2>
-    <div class="chart-main"><canvas id="c2-android"></canvas></div>
+    <h2>コンビニ印刷 API 実行回数 / 印刷件数（月別）</h2>
+    <div class="chart-main"><canvas id="c2-api"></canvas></div>
   </div>
   <div class="two">
     <div class="section">
@@ -281,17 +283,7 @@ const MAISOKU_PRINT = [8,0,0,8,1,1,0,5,5,3,9,8,3,2,11,3,3];
   </div>
   <div class="section">
     <h2>月別データ</h2>
-    <table><thead><tr><th>月</th><th>送信件数</th><th>ユーザー数</th></tr></thead><tbody id="t2"></tbody></table>
-  </div>
-  <div class="section">
-    <h2>収益・損益</h2>
-    <div class="kpi-row col4" style="margin-bottom:14px">
-      <div class="kcard"><div class="label">開発投資</div><div class="value">¥3,624,000</div></div>
-      <div class="kcard"><div class="label">累計印刷収益（@¥35）</div><div class="value" id="k2-rev"></div></div>
-      <div class="kcard"><div class="label">回収率</div><div class="value" id="k2-pct"></div></div>
-      <div class="kcard"><div class="label">損益分岐まで残り</div><div class="value" id="k2-rem"></div></div>
-    </div>
-    <div class="chart-main"><canvas id="c2-rev"></canvas></div>
+    <table><thead><tr><th>月</th><th>送信件数</th><th>ユーザー数</th><th>API実行回数</th><th>印刷件数</th></tr></thead><tbody id="t2"></tbody></table>
   </div>
   <div class="two">
     <div class="section">
@@ -320,12 +312,12 @@ const MAISOKU_PRINT = [8,0,0,8,1,1,0,5,5,3,9,8,3,2,11,3,3];
     <div class="kcard"><div class="label">累計コンビニ印刷</div><div class="value">約70件</div></div>
   </div>
   <div class="section">
-    <h2>iOS ダウンロード数 月別推移（2024/04〜2026/03）</h2>
+    <h2>ダウンロード数 月別推移（iOS + Android）</h2>
     <div class="chart-main"><canvas id="c3-dl"></canvas></div>
   </div>
   <div class="section">
-    <h2>Android ダウンロード数 月別推移（2024/04〜2026/03）</h2>
-    <div class="chart-main"><canvas id="c3-android"></canvas></div>
+    <h2>コンビニ印刷 API 実行回数（月別）</h2>
+    <div class="chart-main"><canvas id="c3-api"></canvas></div>
   </div>
   <div class="two">
     <div class="section">
@@ -340,58 +332,6 @@ const MAISOKU_PRINT = [8,0,0,8,1,1,0,5,5,3,9,8,3,2,11,3,3];
   <div class="section">
     <h2>月別データ</h2>
     <table><thead><tr><th>月</th><th>新規ユーザー</th><th>新規案件</th><th>URL共有</th><th>メール</th><th>コンビニ印刷</th></tr></thead><tbody id="t3"></tbody></table>
-  </div>
-  <div class="section">
-    <h2>収益・損益</h2>
-    <div class="kpi-row col4">
-      <div class="kcard"><div class="label">開発投資</div><div class="value">¥6,526,000</div></div>
-      <div class="kcard"><div class="label">累計印刷収益（@¥35）</div><div class="value" id="k3-rev"></div></div>
-      <div class="kcard"><div class="label">回収率</div><div class="value" id="k3-pct"></div></div>
-      <div class="kcard"><div class="label">損益分岐まで残り</div><div class="value" id="k3-rem"></div></div>
-    </div>
-    <div class="chart-main"><canvas id="c3-rev"></canvas></div>
-  </div>
-</div>
-</div>
-
-<!-- ================================================================
-     PAGE 4: 収益・損益
-     レイアウト: KPI4枚 / [開発投資 vs 累計収益棒（全幅）] / [回収率棒 | マイソク月別収益棒] / [事務予測折れ線（全幅）] / テーブル
-================================================================ -->
-<div class="page" id="p4">
-<div class="container">
-  <div class="kpi-row col4">
-    <div class="kcard"><div class="label">事務 累計印刷収益</div><div class="value" id="k4-jr"></div><div class="sub" id="k4-jr-sub"></div></div>
-    <div class="kcard"><div class="label">事務 月次印刷収益（直近）</div><div class="value" id="k4-jm"></div><div class="sub">595件/月 × ¥50</div></div>
-    <div class="kcard"><div class="label">マイソク 累計印刷収益</div><div class="value" id="k4-mr"></div><div class="sub">約70件 × ¥50</div></div>
-    <div class="kcard"><div class="label">印刷単価</div><div class="value">¥50<span style="font-size:13px;font-weight:400">/件</span></div></div>
-  </div>
-  <div class="section">
-    <h2>開発投資 vs 累計コンビニ印刷収益（@¥50/件）</h2>
-    <p style="font-size:11px;color:#bbb;margin-bottom:12px">※ コンビニ名刺印刷は印刷件数未取得のため除外</p>
-    <div class="chart-main"><canvas id="c4-invest"></canvas></div>
-  </div>
-  <div class="two">
-    <div class="section">
-      <h2>開発投資 回収率（現時点）</h2>
-      <div class="chart-sub"><canvas id="c4-recovery"></canvas></div>
-    </div>
-    <div class="section">
-      <h2>マイソク — 月別コンビニ印刷収益</h2>
-      <div class="chart-sub"><canvas id="c4-ms-rev"></canvas></div>
-    </div>
-  </div>
-  <div class="section">
-    <h2>リモデラ事務 — 累計印刷収益 予測推移（月次595件 × ¥50）</h2>
-    <p style="font-size:11px;color:#bbb;margin-bottom:12px">損益分岐点: ¥3,624,000（362.4万円）</p>
-    <div class="chart-main"><canvas id="c4-forecast"></canvas></div>
-  </div>
-  <div class="section">
-    <h2>損益分岐サマリー</h2>
-    <table>
-      <thead><tr><th>アプリ</th><th>開発投資</th><th>累計印刷数</th><th>累計収益（@¥50）</th><th>回収率</th><th>損益分岐（件数）</th><th>状況</th></tr></thead>
-      <tbody id="t4"></tbody>
-    </table>
   </div>
 </div>
 </div>
@@ -460,8 +400,12 @@ function switchTab(n) {
   document.getElementById('k0-ms2').textContent = fmt(totMs);
   document.getElementById('k0-mss').textContent = `iOS ${fmt(sum(DL.maisoku))} ＋ Android ${fmt(sum(DL_ANDROID.maisoku))}`;
 
+  const meishiTotalPrints = MEISHI_BIT_PRINTS.reduce((a,b)=>a+b,0);
+  const meishiRev0  = meishiTotalPrints * MEISHI_PRINT_PRICE;
   const jimuRev0    = 15387 * JIMU_PRINT_PRICE;
   const maisokuRev0 = 70    * MAISOKU_PRINT_PRICE;
+  document.getElementById('k0-meishi-r').textContent     = '¥' + fmt(meishiRev0);
+  document.getElementById('k0-meishi-r-sub').textContent = `${fmt(meishiTotalPrints)}枚 × ¥${MEISHI_PRINT_PRICE}　回収率 ${(meishiRev0/4640000*100).toFixed(1)}%`;
   document.getElementById('k0-jr').textContent     = '¥' + fmt(jimuRev0);
   document.getElementById('k0-jr-sub').textContent = `15,387件 × ¥${JIMU_PRINT_PRICE}　回収率 ${(jimuRev0/3624000*100).toFixed(1)}%`;
   document.getElementById('k0-mr').textContent     = '¥' + fmt(maisokuRev0);
@@ -488,8 +432,9 @@ new Chart(document.getElementById('c0-android'), {
   options: baseOpt('ダウンロード数')
 });
 
-// 月次収益チャート（事務推計 + マイソク実績）
+// 月次収益チャート（名刺実績 + 事務推計 + マイソク実績）
 {
+  const meishiRevMonthly  = MEISHI_BIT_PRINTS.map(v => v * MEISHI_PRINT_PRICE);
   const jimuMonthlyPrints = Math.round(15387/24); // ≈641
   const jimuRevMonthly    = MONTHS.map(() => jimuMonthlyPrints * JIMU_PRINT_PRICE);
   const maisokuPad        = [0,0,0,0,0,0,0,...MAISOKU_PRINT]; // 7ヶ月(Apr-Oct2024)を0でパディング
@@ -497,6 +442,7 @@ new Chart(document.getElementById('c0-android'), {
   new Chart(document.getElementById('c0-rev'), {
     type:'bar',
     data:{ labels:MONTHS, datasets:[
+      barDs('名刺 月次収益(実績)', meishiRevMonthly, C.meishi),
       barDs('事務 月次収益(推計)', jimuRevMonthly, C.jimu),
       barDs('マイソク 月次収益(実績)', maisokuRevMonthly, C.maisoku),
     ]},
@@ -519,53 +465,30 @@ new Chart(document.getElementById('c1-dl'), {
   ]},
   options: baseOpt('ダウンロード数')
 });
-new Chart(document.getElementById('c1-trend'), {
-  type:'line',
-  data:{ labels:MONTHS, datasets:[{
-    label:'iOS DL',
-    data: DL.meishi,
-    borderColor: C.meishi, backgroundColor: alpha(C.meishi,.1),
-    borderWidth:2, pointRadius:3, tension:.3, fill:true
-  }]},
-  options: baseOpt('ダウンロード数')
-});
-new Chart(document.getElementById('c1-android'), {
-  type:'line',
-  data:{ labels:MONTHS, datasets:[{
-    label:'Android DL',
-    data: DL_ANDROID.meishi,
-    borderColor: '#34d399', backgroundColor: 'rgba(52,211,153,.1)',
-    borderWidth:2, pointRadius:3, tension:.3, fill:true
-  }]},
-  options: baseOpt('ダウンロード数')
+new Chart(document.getElementById('c1-api'), {
+  type: 'bar',
+  data: { labels: MONTHS, datasets: [
+    barDs('API実行回数', MEISHI_API_CALLS, C.meishi),
+    barDs('BIT印刷枚数', MEISHI_BIT_PRINTS, C.jimu),
+  ]},
+  options: baseOpt('件')
 });
 
 const tb1 = document.getElementById('t1');
 MONTHS.forEach((m,i) => {
   const ios = DL.meishi[i], and = DL_ANDROID.meishi[i];
+  const api = MEISHI_API_CALLS[i], ph = MEISHI_PHOTO[i], mn = MEISHI_MANUAL[i];
   const tr = document.createElement('tr');
-  tr.innerHTML = `<td>${m}</td><td>${fmt(ios)}</td><td>${fmt(and)}</td><td>${fmt(ios+and)}</td>`;
+  const bp = MEISHI_BIT_PRINTS[i];
+  tr.innerHTML = `<td>${m}</td><td>${fmt(ios)}</td><td>${fmt(and)}</td><td>${fmt(ios+and)}</td><td>${api!=null?fmt(api):'-'}</td><td>${ph!=null?fmt(ph):'-'}</td><td>${mn!=null?fmt(mn):'-'}</td><td>${fmt(bp)}</td>`;
   tb1.appendChild(tr);
 });
+const validApi1 = MEISHI_API_CALLS.filter(v=>v!=null);
+const validPh1  = MEISHI_PHOTO.filter(v=>v!=null);
+const validMn1  = MEISHI_MANUAL.filter(v=>v!=null);
 const totRow1 = document.createElement('tr'); totRow1.className='hl';
-totRow1.innerHTML = `<td>合計</td><td>${fmt(sum(DL.meishi))}</td><td>${fmt(sum(DL_ANDROID.meishi))}</td><td>${fmt(sum(DL.meishi)+sum(DL_ANDROID.meishi))}</td>`;
+totRow1.innerHTML = `<td>合計</td><td>${fmt(sum(DL.meishi))}</td><td>${fmt(sum(DL_ANDROID.meishi))}</td><td>${fmt(sum(DL.meishi)+sum(DL_ANDROID.meishi))}</td><td>${fmt(sum(validApi1))}</td><td>${fmt(sum(validPh1))}</td><td>${fmt(sum(validMn1))}</td><td>${fmt(sum(MEISHI_BIT_PRINTS))}</td>`;
 tb1.appendChild(totRow1);
-
-document.getElementById('k1-bep').textContent = fmt(Math.ceil(4640000/MEISHI_PRINT_PRICE)) + '件';
-
-new Chart(document.getElementById('c1-rev'), {
-  type:'bar',
-  data:{ labels:['開発投資','累計収益'], datasets:[{
-    label:'金額', data:[4640000, 0],
-    backgroundColor:[alpha(C.invest,.2), alpha(C.rev,.3)],
-    borderColor:[C.invest, C.rev], borderWidth:1.5, borderRadius:4
-  }]},
-  options:{
-    ...baseOpt('円'),
-    scales:{ x:xOpt, y:{ ...yOpt(), ticks:{callback:v=>'¥'+fmt(v),font:{size:10}}, grid:{color:'#f3f4f6'} } },
-    plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>ctx.dataIndex===1?'未取得':'¥'+fmt(ctx.raw)}} }
-  }
-});
 
 // ─── PAGE 2 リモデラ事務 ───
 document.getElementById('k2-dl').textContent        = fmt(sum(DL.jimu) + sum(DL_ANDROID.jimu));
@@ -577,16 +500,6 @@ new Chart(document.getElementById('c2-dl'), {
     barDs('iOS DL',     DL.jimu,         C.jimu),
     barDs('Android DL', DL_ANDROID.jimu, '#34d399'),
   ]},
-  options: baseOpt('ダウンロード数')
-});
-new Chart(document.getElementById('c2-android'), {
-  type:'line',
-  data:{ labels:MONTHS, datasets:[{
-    label:'Android DL',
-    data: DL_ANDROID.jimu,
-    borderColor:'#34d399', backgroundColor:'rgba(52,211,153,.1)',
-    borderWidth:2, pointRadius:3, tension:.3, fill:true
-  }]},
   options: baseOpt('ダウンロード数')
 });
 new Chart(document.getElementById('c2-send'), {
@@ -631,52 +544,32 @@ new Chart(document.getElementById('c2-doc'), {
 const tb2 = document.getElementById('t2');
 JIMU_MONTHS.forEach((m,i) => {
   const tr = document.createElement('tr');
-  tr.innerHTML = `<td>${m}</td><td>${fmt(JIMU_SENDS[i])}</td><td>${fmt(JIMU_USERS[i])}</td>`;
+  const api = JIMU_CONV_API[i], prt = JIMU_CONV_PRINT[i];
+  tr.innerHTML = `<td>${m}</td><td>${fmt(JIMU_SENDS[i])}</td><td>${fmt(JIMU_USERS[i])}</td><td>${api!=null?fmt(api):'-'}</td><td>${prt!=null?fmt(prt):'-'}</td>`;
   tb2.appendChild(tr);
 });
+const totRow2 = document.createElement('tr'); totRow2.className='hl';
+totRow2.innerHTML = `<td>累計</td><td>${fmt(sum(JIMU_SENDS))}</td><td>-</td><td>${fmt(sum(JIMU_CONV_API))}</td><td>${fmt(sum(JIMU_CONV_PRINT))}</td>`;
+tb2.appendChild(totRow2);
 
-// p2 収益損益
-{
-  const inv = 3624000, cnt = 15387;
-  const rev = cnt * PRINT_PRICE;
-  const bep = Math.ceil(inv / PRINT_PRICE);
-  document.getElementById('k2-rev').textContent = '¥' + fmt(rev);
-  document.getElementById('k2-pct').textContent = (rev/inv*100).toFixed(1) + '%';
-  document.getElementById('k2-rem').textContent = fmt(bep - cnt) + '件';
-  new Chart(document.getElementById('c2-rev'), {
-    type:'bar',
-    data:{ labels:['開発投資','累計収益'], datasets:[{
-      label:'金額', data:[inv, rev],
-      backgroundColor:[alpha(C.invest,.2), alpha(C.rev,.3)],
-      borderColor:[C.invest, C.rev], borderWidth:1.5, borderRadius:4
-    }]},
-    options:{
-      ...baseOpt('円'),
-      scales:{ x:xOpt, y:{ ...yOpt(), ticks:{callback:v=>'¥'+fmt(v),font:{size:10}}, grid:{color:'#f3f4f6'} } },
-      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>'¥'+fmt(ctx.raw)}} }
-    }
-  });
-}
+new Chart(document.getElementById('c2-api'), {
+  type: 'bar',
+  data: { labels: JIMU_MONTHS, datasets: [
+    barDs('API実行回数', JIMU_CONV_API,   C.meishi),
+    barDs('印刷件数',   JIMU_CONV_PRINT, C.jimu),
+  ]},
+  options: baseOpt('件')
+});
 
 // ─── PAGE 3 マイソク ───
 document.getElementById('k3-dl').textContent = fmt(sum(DL.maisoku) + sum(DL_ANDROID.maisoku));
 
 new Chart(document.getElementById('c3-dl'), {
   type:'bar',
-  data:{ labels:MONTHS, datasets:[
-    barDs('iOS DL',     DL.maisoku,         C.maisoku),
-    barDs('Android DL', DL_ANDROID.maisoku, '#34d399'),
+  data:{ labels:MONTHS.slice(6), datasets:[
+    barDs('iOS DL',     DL.maisoku.slice(6),         C.maisoku),
+    barDs('Android DL', DL_ANDROID.maisoku.slice(6), '#34d399'),
   ]},
-  options: baseOpt('ダウンロード数')
-});
-new Chart(document.getElementById('c3-android'), {
-  type:'line',
-  data:{ labels:MONTHS, datasets:[{
-    label:'Android DL',
-    data: DL_ANDROID.maisoku,
-    borderColor:'#34d399', backgroundColor:'rgba(52,211,153,.1)',
-    borderWidth:2, pointRadius:3, tension:.3, fill:true
-  }]},
   options: baseOpt('ダウンロード数')
 });
 new Chart(document.getElementById('c3-ua'), {
@@ -707,135 +600,14 @@ const totRow3 = document.createElement('tr'); totRow3.className='hl';
 totRow3.innerHTML = `<td>累計</td><td>${sum(MAISOKU_USERS)}</td><td>${sum(MAISOKU_CASES)}</td><td>${sum(MAISOKU_URL)}</td><td>${sum(MAISOKU_MAIL)}</td><td>${sum(MAISOKU_PRINT)}</td>`;
 tb3.appendChild(totRow3);
 
-// p3 収益損益
-{
-  const inv = 6526000, cnt = 70;
-  const rev = cnt * PRINT_PRICE;
-  const bep = Math.ceil(inv / PRINT_PRICE);
-  document.getElementById('k3-rev').textContent = '¥' + fmt(rev);
-  document.getElementById('k3-pct').textContent = (rev/inv*100).toFixed(2) + '%';
-  document.getElementById('k3-rem').textContent = fmt(bep - cnt) + '件';
-  new Chart(document.getElementById('c3-rev'), {
-    type:'bar',
-    data:{ labels:['開発投資','累計収益'], datasets:[{
-      label:'金額', data:[inv, rev],
-      backgroundColor:[alpha(C.invest,.2), alpha(C.rev,.3)],
-      borderColor:[C.invest, C.rev], borderWidth:1.5, borderRadius:4
-    }]},
-    options:{
-      ...baseOpt('円'),
-      scales:{ x:xOpt, y:{ ...yOpt(), ticks:{callback:v=>'¥'+fmt(v),font:{size:10}}, grid:{color:'#f3f4f6'} } },
-      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>'¥'+fmt(ctx.raw)}} }
-    }
-  });
-}
+new Chart(document.getElementById('c3-api'), {
+  type: 'bar',
+  data: { labels: MONTHS.slice(6), datasets: [
+    barDs('コンビニ印刷', [0, ...MAISOKU_PRINT], C.print),
+  ]},
+  options: baseOpt('件')
+});
 
-// ─── PAGE 4 収益・損益 ───
-(() => {
-  const JIMU_PRINT    = 15387;
-  const MAISOKU_PRINT_T = 70;
-  const JIMU_MONTHLY  = 595;
-  const JIMU_INV      = 3624000;
-  const MAISOKU_INV   = 6526000;
-
-  const jimuRev    = JIMU_PRINT * PRINT_PRICE;
-  const maisokuRev = MAISOKU_PRINT_T * PRINT_PRICE;
-  const monthlyRev = JIMU_MONTHLY * PRINT_PRICE;
-
-  // KPIカード
-  document.getElementById('k4-jr').textContent     = '¥' + fmt(jimuRev);
-  document.getElementById('k4-jr-sub').textContent = `回収率 ${(jimuRev/JIMU_INV*100).toFixed(1)}%`;
-  document.getElementById('k4-jm').textContent     = '¥' + fmt(monthlyRev);
-  document.getElementById('k4-mr').textContent     = '¥' + fmt(maisokuRev);
-
-  // 開発投資 vs 累計収益
-  new Chart(document.getElementById('c4-invest'), {
-    type:'bar',
-    data:{
-      labels:['リモデラ事務','リモデラマイソク'],
-      datasets:[
-        { label:'開発投資',     data:[JIMU_INV, MAISOKU_INV], backgroundColor:alpha(C.invest,.2), borderColor:C.invest, borderWidth:1.5, borderRadius:4 },
-        { label:'累計収益(@¥50)', data:[jimuRev, maisokuRev], backgroundColor:alpha(C.rev,.3),    borderColor:C.rev,    borderWidth:1.5, borderRadius:4 },
-      ]
-    },
-    options:{
-      ...baseOpt('円'),
-      scales:{ x:xOpt, y:{ ...yOpt(), ticks:{ callback:v=>'¥'+fmt(v), font:{size:10} }, grid:{color:'#f3f4f6'} } },
-      plugins:{ legend:{position:'top',labels:{boxWidth:11,font:{size:12}}}, tooltip:{callbacks:{label:ctx=>'¥'+fmt(ctx.raw)}} }
-    }
-  });
-
-  // 回収率
-  const jimuPct    = parseFloat((jimuRev/JIMU_INV*100).toFixed(2));
-  const maisokuPct = parseFloat((maisokuRev/MAISOKU_INV*100).toFixed(2));
-  new Chart(document.getElementById('c4-recovery'), {
-    type:'bar',
-    data:{
-      labels:['リモデラ事務','リモデラマイソク'],
-      datasets:[
-        { label:'回収済み(%)', data:[jimuPct, maisokuPct],               backgroundColor:[alpha(C.rev,.3),alpha(C.rev,.3)],   borderColor:[C.rev,C.rev],     borderWidth:1.5, borderRadius:4 },
-        { label:'未回収(%)',   data:[100-jimuPct, 100-maisokuPct],       backgroundColor:[alpha(C.red,.15),alpha(C.red,.15)], borderColor:[C.red,C.red],     borderWidth:1.5, borderRadius:4 },
-      ]
-    },
-    options:{
-      ...baseOpt('%'),
-      scales:{ x:xOpt, y:{ ...yOpt(), max:100, ticks:{callback:v=>v+'%', font:{size:11}}, grid:{color:'#f3f4f6'} } },
-      plugins:{ legend:{position:'top',labels:{boxWidth:11,font:{size:12}}}, tooltip:{callbacks:{label:ctx=>ctx.raw.toFixed(2)+'%'}} }
-    }
-  });
-
-  // マイソク月別収益
-  new Chart(document.getElementById('c4-ms-rev'), {
-    type:'bar',
-    data:{ labels:MAISOKU_MONTHS, datasets:[ barDs('印刷収益（¥）', MAISOKU_PRINT.map(v=>v*PRINT_PRICE), C.print) ] },
-    options:{
-      ...baseOpt('円'),
-      scales:{ x:xOpt, y:{ ...yOpt(), ticks:{callback:v=>'¥'+fmt(v), font:{size:10}}, grid:{color:'#f3f4f6'} } },
-      plugins:{ legend:{position:'top',labels:{boxWidth:11,font:{size:12}}}, tooltip:{callbacks:{label:ctx=>'¥'+fmt(ctx.raw)}} }
-    }
-  });
-
-  // 事務 累計収益予測
-  const labels = ['現在(2026/04)'];
-  const revData = [jimuRev];
-  const bepData = [JIMU_INV];
-  let cum = jimuRev;
-  let bepMonth = null;
-  for (let i = 1; i <= 60; i++) {
-    cum += monthlyRev;
-    labels.push(`+${i}ヶ月`);
-    revData.push(cum);
-    bepData.push(JIMU_INV);
-    if (!bepMonth && cum >= JIMU_INV) bepMonth = i;
-  }
-  new Chart(document.getElementById('c4-forecast'), {
-    type:'line',
-    data:{ labels, datasets:[
-      { label:'累計収益（予測）', data:revData, borderColor:C.rev, backgroundColor:alpha(C.rev,.1), borderWidth:2.5, pointRadius:0, tension:.3, fill:true },
-      { label:`損益分岐点 ¥${fmt(JIMU_INV)}`, data:bepData, borderColor:C.red, backgroundColor:'transparent', borderWidth:1.5, pointRadius:0, borderDash:[6,4] },
-    ]},
-    options:{
-      ...baseOpt('円'),
-      scales:{ x:{ ...xOpt, ticks:{...xOpt.ticks, maxTicksLimit:13} }, y:{ ...yOpt(), ticks:{callback:v=>'¥'+fmt(v), font:{size:10}}, grid:{color:'#f3f4f6'} } },
-      plugins:{ legend:{position:'top',labels:{boxWidth:11,font:{size:12}}}, tooltip:{callbacks:{label:ctx=>'¥'+fmt(ctx.raw)}} }
-    }
-  });
-
-  // サマリーテーブル
-  const tb4 = document.getElementById('t4');
-  [
-    { name:'コンビニ名刺印刷', inv:4640000,    rev:null,       cnt:null,           bep:Math.ceil(4640000/MEISHI_PRINT_PRICE) },
-    { name:'リモデラ事務',     inv:JIMU_INV,   rev:jimuRev,    cnt:JIMU_PRINT,     bep:Math.ceil(JIMU_INV/PRINT_PRICE) },
-    { name:'リモデラマイソク', inv:MAISOKU_INV, rev:maisokuRev, cnt:MAISOKU_PRINT_T, bep:Math.ceil(MAISOKU_INV/PRINT_PRICE) },
-  ].forEach(r => {
-    const tr = document.createElement('tr');
-    const cntStr = r.cnt != null ? fmt(r.cnt)+'件' : '未取得';
-    const revStr = r.rev != null ? '¥'+fmt(r.rev) : '未取得';
-    const pctStr = r.rev != null ? (r.rev/r.inv*100).toFixed(2)+'%' : '—';
-    tr.innerHTML = `<td>${r.name}</td><td>¥${fmt(r.inv)}</td><td>${cntStr}</td><td>${revStr}</td><td>${pctStr}</td><td>${fmt(r.bep)}件</td>`;
-    tb4.appendChild(tr);
-  });
-})();
 </script>
 
 </body>
