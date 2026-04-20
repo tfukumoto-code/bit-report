@@ -441,9 +441,9 @@ new Chart(document.getElementById('c0-android'), {
   new Chart(document.getElementById('c0-rev'), {
     type:'bar',
     data:{ labels:MONTHS, datasets:[
-      barDs('名刺 月次収益', meishiRevMonthly, C.meishi),
-      barDs('事務 月次収益', jimuRevMonthly, C.jimu),
-      barDs('マイソク 月次収益', maisokuRevMonthly, C.maisoku),
+      barDs('コンビニ名刺印刷', meishiRevMonthly, C.meishi),
+      barDs('リモデラ事務',     jimuRevMonthly,   C.jimu),
+      barDs('マイソク',         maisokuRevMonthly, C.maisoku),
     ]},
     options:{
       ...baseOpt('円'),
