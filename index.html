@@ -79,10 +79,18 @@ const MONTHS = [
   '2025/10','2025/11','2025/12','2026/01','2026/02','2026/03'
 ];
 
+// iOS ダウンロード数
 const DL = {
   meishi:  [357,505,685,859,867,872,891,782,642,626,647,726,814,799,724,662,590,786,712,649,667,1350,1669,1859],
   jimu:    [1162,1070,944,779,656,737,798,664,653,632,634,706,622,527,600,866,293,313,349,255,252,284,303,794],
   maisoku: [80,80,67,55,37,44,55,41,40,63,60,68,43,50,45,39,37,46,46,47,42,40,47,41]
+};
+
+// ★ Android ダウンロード数（未取得 - Google Play Console 別アカウント。取得後にここへ入力）
+const DL_ANDROID = {
+  meishi:  null, // 未取得
+  jimu:    null, // 未取得
+  maisoku: null, // 未取得
 };
 
 // リモデラ事務
@@ -133,21 +141,24 @@ const MAISOKU_PRINT = [8,0,0,8,1,1,0,5,5,3,9,8,3,2,11,3,3];
 <div class="page active" id="p0">
 <div class="container">
   <div class="kpi-row col3">
-    <div class="kcard"><div class="label">コンビニ名刺印刷 iOS DL（24ヶ月）</div><div class="value" id="k0-m"></div><div class="sub" id="k0-ms"></div></div>
-    <div class="kcard"><div class="label">リモデラ事務 iOS DL（24ヶ月）</div><div class="value" id="k0-j"></div><div class="sub" id="k0-js"></div></div>
-    <div class="kcard"><div class="label">リモデラマイソク iOS DL（24ヶ月）</div><div class="value" id="k0-ms2"></div><div class="sub" id="k0-mss"></div></div>
+    <div class="kcard"><div class="label">コンビニ名刺印刷 DL合計（24ヶ月）</div><div class="value" id="k0-m"></div><div class="sub" id="k0-ms"></div></div>
+    <div class="kcard"><div class="label">リモデラ事務 DL合計（24ヶ月）</div><div class="value" id="k0-j"></div><div class="sub" id="k0-js"></div></div>
+    <div class="kcard"><div class="label">リモデラマイソク DL合計（24ヶ月）</div><div class="value" id="k0-ms2"></div><div class="sub" id="k0-mss"></div></div>
   </div>
+  <p style="font-size:11px;color:#f59e0b;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:7px 12px;margin-bottom:16px">
+    ⚠️ 現在は <strong>iOS のみ</strong>の数値です。Android（Google Play Console 別アカウント）は未取得のため含まれていません。
+  </p>
   <div class="section">
-    <h2>iOS ダウンロード数 推移（3アプリ比較）</h2>
+    <h2>iOS ダウンロード数 月別推移（3アプリ比較・24ヶ月）</h2>
     <div class="chart-main"><canvas id="c0-all"></canvas></div>
   </div>
   <div class="two">
     <div class="section">
-      <h2>前半比較（2024/04〜2024/09）</h2>
+      <h2>開始6ヶ月 iOS DL比較（2024/04〜2024/09）</h2>
       <div class="chart-sub"><canvas id="c0-h1"></canvas></div>
     </div>
     <div class="section">
-      <h2>後半比較（2025/10〜2026/03）</h2>
+      <h2>直近6ヶ月 iOS DL比較（2025/10〜2026/03）</h2>
       <div class="chart-sub"><canvas id="c0-h2"></canvas></div>
     </div>
   </div>
@@ -403,11 +414,11 @@ function switchTab(n) {
 
 // ─── PAGE 0 全体比較 ───
 document.getElementById('k0-m').textContent  = fmt(sum(DL.meishi));
-document.getElementById('k0-ms').textContent = `最新月: ${fmt(DL.meishi.at(-1))}（2026/03）`;
+document.getElementById('k0-ms').textContent = `iOS ${fmt(sum(DL.meishi))} ＋ Android 未取得`;
 document.getElementById('k0-j').textContent  = fmt(sum(DL.jimu));
-document.getElementById('k0-js').textContent = `最新月: ${fmt(DL.jimu.at(-1))}（2026/03）`;
+document.getElementById('k0-js').textContent = `iOS ${fmt(sum(DL.jimu))} ＋ Android 未取得`;
 document.getElementById('k0-ms2').textContent = fmt(sum(DL.maisoku));
-document.getElementById('k0-mss').textContent = `最新月: ${fmt(DL.maisoku.at(-1))}（2026/03）`;
+document.getElementById('k0-mss').textContent = `iOS ${fmt(sum(DL.maisoku))} ＋ Android 未取得`;
 
 new Chart(document.getElementById('c0-all'), {
   type:'line',
